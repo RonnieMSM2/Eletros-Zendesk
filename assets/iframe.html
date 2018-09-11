@@ -1,0 +1,182 @@
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@zendeskgarden/css-bedrock@7.0" type="text/css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.10/jquery.mask.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.10/jquery.mask.min.js"></script>
+</head>
+<style>
+  @import url(https://netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css);
+  .search {
+    width: 100%;
+    position: relative;
+  }
+  .search:before {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    font-family: "FontAwesome";
+    content: "\f002";
+    background: #437DA5;
+    text-align: center;
+    color: #fff;
+    border-radius: 5px;
+    -webkit-font-smoothing: subpixel-antialiased;
+    font-smooth: always;
+  }
+  .searchTerm {
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    width: 100%;
+    border: 5px solid #155D8F;
+    padding: 5px;
+    height: 40px;
+    border-radius: 5px;
+    outline: none;
+  }
+  .searchButton {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 40px;
+    height: 40px;
+    opacity: 0;
+    cursor: pointer;
+  }
+</style>
+<body>
+  <!-- https://github.com/zendesk/zendesk_app_framework_sdk -->
+  <script type="text/javascript" src="https://assets.zendesk.com/apps/sdk/2.0/zaf_sdk.js"></script>
+  <link href="//cdn.jsdelivr.net/combine/npm/@zendeskgarden/css-bedrock,npm/@zendeskgarden/css-grid,npm/@zendeskgarden/css-buttons,npm/@zendeskgarden/css-forms,npm/@zendeskgarden/css-utilities" rel="stylesheet">
+
+  <label class="radio-inline">
+    <input type="radio" name="escolha" id="teste" value="cpf">CPF
+  </label>
+  <label class="radio-inline">
+    <input type="radio" name="escolha" id="teste" value="nome">Nome
+  </label>
+
+  <!-- <div>
+    <input type="radio" name="escolha" id="teste" value="nome"> Nome<br>
+    <input type="radio" name="escolha" id="teste" value="cpf"> CPF<br>
+  </div> -->
+
+  <div class="c-txt u-mb-sm search">
+    <input class="c-txt__input searchTerm" name="txtCPF" id="txtCPF" type="text"/>
+    <button class="searchButton" id="btnPesquisar"></button>
+  </div>
+
+  <div id="naoEncontrado"></div>
+  
+  <!-- <div id="dadosCliente">
+    <div class="nome"></div>
+    <div class="email"></div>
+    <div class="NUMELETROS"></div>
+    <div class="PATROCINADORA"></div>
+    <div class="PLANO"></div>
+    <div class="SITUACAO"></div>
+    <div class="TELEFONE"></div>
+  </div> -->
+
+  <div id="tabelaAqui"></div>
+
+  <!-- https://github.com/zendesk/zendesk_app_framework_sdk -->
+  <script src="//assets.zendesk.com/apps/sdk/2.0/zaf_sdk.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery"></script>
+  <script>
+    var zafClient = ZAFClient.init();
+
+    zafClient.invoke('resize', { width: '100%', height: '750px' })
+
+    var keyboard = true;
+    var clientes = [];
+
+    function salvar(cpf){
+      var cliente = clientes.find(c => c.CPF == cpf);
+      var client = ZAFClient.init();
+        //client.set('user.email', cliente.EMAIL);
+        client.set('user.customField:cpf', cliente.CPF);
+        client.set('user.customField:nometitular', cliente.NOME);
+        client.set('user.customField:telefone', cliente.TELEFONE);
+        client.set('user.customField:situacao_do_participante', cliente.SITUACAO);
+        client.set('user.customField:patrocinadora', cliente.PATROCINADORA);
+        client.set('user.customField:plano', cliente.PLANO);
+        client.set('user.customField:numeroeletros', cliente.NUMELETROS);
+      }
+
+    $(document).ready(function() {
+      $('.c-btn').focus(function() {
+        $(this).addClass('is-focused');
+      }).on('blur mouseup', function() {
+        $(this).removeClass('is-focused');
+      });
+      $('.c-chk__input').focus(function() {
+        $(this).siblings('.c-chk__label').toggleClass('is-focused', keyboard);
+        keyboard = true;
+      }).blur(function() {
+        $(this).siblings('.c-chk__label').removeClass('is-focused');
+      });
+      $('.c-chk__label').mouseup(function() {
+        keyboard = false;
+      });
+
+      $("#btnPesquisar").click(function() {
+        //document.getElementById("dados").reset();
+        var nomeCpf = $("#txtCPF").val();
+        var escolha = $('input[name=escolha]:checked').val();
+        var urlRequest = escolha == "nome" ? 'http://int1.eletros.com.br/WebApi/api/CadastroEletros?pwd=1234&nome=' + nomeCpf : 'http://int1.eletros.com.br/WebApi/api/CadastroEletros?pwd=1234&cpf=' + nomeCpf;
+        debugger;
+
+        zafClient.request(urlRequest).then(
+        function(customers) {
+            if(customers.length > 0)
+            {
+              var content = '';
+              clientes = customers;
+              $.each(customers, function (key, val) {
+
+                content += "<div>";
+                content += '<div>' +  '<b>Nome:</b> ' + val.NOME + '</div>';
+                content += '<div>' +  '<b>Email:</b> ' + val.EMAIL + '</div>';
+                content += '<div>' +  '<b>Número Eletros:</b> ' + val.NUMELETROS + '</div>';
+                content += '<div>' +  '<b>Patrocinadora:</b> ' + val.PATROCINADORA + '</div>';
+                content += '<div>' +  '<b>Plano:</b> ' + val.PLANO + '</div>';
+                content += '<div>' +  '<b>Situação:</b> ' + val.SITUACAO + '</div>';
+                content += '<div>' +  '<b>Telefone:</b> ' + val.TELEFONE + '</div>';
+                content += "<button onclick=\"salvar('"+ val.CPF +"');\">Selecionar</button></br>"
+                content += "</div>"
+                content += "<hr>";
+
+              });
+
+              $('#tabelaAqui').append(content);
+              $("#tabelaAqui").show();
+              //$("#dadosCliente").show();
+              $("#naoEncontrado").hide();
+
+            } else {
+            
+              $("#naoEncontrado").text("Cliente não encontrado.");
+              $("#naoEncontrado").show();
+              //$("#dadosCliente").hide();
+              $("#tabelaAqui").hide();
+            }
+        },
+        function(response) {
+            console.error(response.responseText);
+        });
+      });
+
+        $(document).ready(function(){
+        $('#txtCPF').mask('000.000.000-00', {reverse: true});
+      });
+
+    });
+  </script>
+</body>
+</html>

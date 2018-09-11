@@ -1,0 +1,18 @@
+{
+  "name": "Integração Eletros",
+  "author": {
+    "name": "MSM2",
+    "email": "contato@msm2.com"
+  },
+  "defaultLocale": "en",
+  "private": true,
+  "version": "1.0",
+  "location": {
+    "support": {
+      "user_sidebar": "assets/iframe.html",
+      "ticket_sidebar": "assets/iframe.html",
+      "new_ticket_sidebar": "assets/iframe.html"
+    }
+  },
+  "frameworkVersion": "2.0"
+}
